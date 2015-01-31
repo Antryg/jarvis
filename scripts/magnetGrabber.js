@@ -8,9 +8,15 @@ var colors        = require('colors');
 var MongoClient   = require('mongodb').MongoClient;
 var format        = require('util').format;
 var Q             = require('q');
+var log4js        = require('log4js');
+
+log4js.configure( __dirname + '/../config/magnet_grabber.json', { reloadSecs: 300 });
 
 var numberRegEx = /[0-9]+$/;
+var tvRegEx = /^(.*)-[0-9]+$/;
 var episodeNameRegEx = /^\([0-9]+\/[0-9]+\) (.*) - [0-9]+$/;
+
+console.log('starting...');
 
 MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
 
@@ -22,12 +28,13 @@ MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
         function (errors, window) {
 
             var episodesCollection = db.collection('episodes');
-//            var tvseriesCollection = db.collection('tvseries');
-            var openEpisodes = window.$("div.episode").length;
+            var tvseriesCollection = db.collection('tvseries');
+            var openActions = window.$("div.episode").length;
 
             window.$("div.episode").each( function(index, value) {
 
                 var epId   = value._attributes[1]._nodeValue;
+                var tvId   = epId.match(tvRegEx)[1];
                 var tvName = value.firstChild.nodeValue.match(episodeNameRegEx)[1];
 
                 window.$("div#" + epId + " div.linkful:first-child a[href^=\"magnet\"]").each( function(index, value) {
@@ -36,37 +43,72 @@ MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
 
                     episodesCollection.count({ id : epId }, function( err, count ) {
 
-//                        tvseriesCollection.find({ id : epId }, function( err, count ) {
-
                         if(err) throw err;
 
                         if( count == 0 ) {
 
-                            episodeNumber = parseInt(epId.match(numberRegEx)[0]);
+                            tvseriesCollection.find({ id : tvId }).toArray( function( err, data ) {
 
-                            episodesCollection.insert( {
-                                id            : epId,
-                                series        : tvName,
-                                episodeNumber : episodeNumber,
-                                magnet        : magnetUrl,
-                                timestamp     : new Date()
-                            }, function(err) {
-                                closeEpisode();
                                 if(err) throw err;
-                            } );
+                                var queueEpisode = false;
 
-                        } else {
-                            closeEpisode();
-                        }
+                                if( data.length == 0 ) {
+
+                                    console.log('...adding tvseries ' + tvId);
+
+                                    openActions++;
+                                    queueEpisode = true;
+
+                                    tvseriesCollection.insert({
+                                        id        : tvId,
+                                        alias     : tvId,
+                                        desc      : tvName,
+                                        watching  : false,
+                                        timestamp : new Date()
+                                    }, function(err) {
+                                        closeEpisode();
+                                        if(err) throw err;
+                                    });
+
+                                } else {
+                                    queueEpisode = data[0].watching;
+                                }
+
+                                console.log('...adding episode ' + epId);
+
+                                episodeNumber = parseInt(epId.match(numberRegEx)[0]);
+
+                                episodesCollection.insert( {
+                                    id            : epId,
+                                    tvid          : tvId,
+                                    series        : tvName,
+                                    episodeNumber : episodeNumber,
+                                    magnet        : magnetUrl,
+                                    queue         : queueEpisode,
+                                    timestamp     : new Date()
+                                }, function(err) {
+                                    closeEpisode();
+                                    if(err) throw err;
+                                } );
+                            } else {
+                                closeEpisode();
+                            }
+
+                        });
 
                     });
 
                 });
             } );
+
             function closeEpisode() {
-                openEpisodes--;
-                if( openEpisodes < 1 ) {
+                openActions--;
+                if( openActions < 1 ) {
                     db.close();
+                    console.log('...shutting down');
+                    log4js.shutdown(function() {
+                        process.exit(1);
+                    });
                 }
             }
 
