@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Jarvis</title>
+
+    <link rel="icon" type="image/png" href="/pic/jarvis_big.png">
+    <link rel="stylesheet" href="/libary/foundation-5.4.7/css/normalize.css">
+    <link rel="stylesheet" href="/libary/foundation-5.4.7/css/foundation.css">
+    <link rel="stylesheet" href="/css/app.css">
+
+    <script src="/libary/foundation-5.4.7/js/vendor/modernizr.js"></script>
+    <script src="/libary/foundation-5.4.7/js/vendor/jquery.js"></script>
+    <script src="/libary/foundation-5.4.7/js/foundation.min.js"></script>
+
+    <script src="/libary/react-0.12.2/build/react.js"></script>
+    <script src="/libary/react-0.12.2/build/JSXTransformer.js"></script>
+
+</head>
+<body>
+
+<script src="/js/index.js"></script>
+<script type="text/jsx" src="/js/magnetDB.js"></script>
+
+<nav class="top-bar" data-topbar role="navigation">
+
+    <ul class="title-area">
+        <li class="name">
+            <h1><a href="#">JARVIS</a></h1>
+        </li>
+        <!--<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>-->
+    </ul>
+
+    <!--<section class="top-bar-section">-->
+        <!--<ul class="right">-->
+            <!--<li class="active"><a href="#">Right Button Active</a></li>-->
+            <!--<li class="has-dropdown">-->
+                <!--<a href="#">Right Button Dropdown</a>-->
+                <!--<ul class="dropdown">-->
+                    <!--<li><a href="#">First link in dropdown</a></li>-->
+                    <!--<li class="active"><a href="#">Active link in dropdown</a></li>-->
+                <!--</ul>-->
+            <!--</li>-->
+        <!--</ul>-->
+    <!--</section>-->
+
+</nav>
+<br>
+<div id="errorBox" style="position:fixed;margin:auto;right:0;left:0;top:10px;width:80%;z-index:9999;"></div>
+
+<ul class="small-block-grid-3">
+    <li>Wohnzimmer:</li>
+    <li><a class="button small radius round" onclick="sendCommand(4, 1)" href="#">AN</a></li>
+    <li><a class="button small radius round" onclick="sendCommand(4, 0)" href="#">AUS</a></li>
+</ul>
+
+<ul class="small-block-grid-3">
+    <li>BAD:</li>
+    <li><a class="button small radius round" onclick="sendCommand(3, 1)" href="#">AN</a></li>
+    <li><a class="button small radius round" onclick="sendCommand(3, 0)" href="#">AUS</a></li>
+</ul>
+
+<ul class="small-block-grid-3">
+    <li>KUCHE:</li>
+    <li><a class="button small radius round" onclick="sendCommand(2, 1)" href="#">AN</a></li>
+    <li><a class="button small radius round" onclick="sendCommand(2, 0)" href="#">AUS</a></li>
+</ul>
+
+<br />
+
+<div id="content"></div>
+
+</body>
+</html>
