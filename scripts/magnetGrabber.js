@@ -3,11 +3,7 @@
  */
 
 var jsdom         = require("jsdom");
-var torrentStream = require('torrent-stream');
-var colors        = require('colors');
 var MongoClient   = require('mongodb').MongoClient;
-var format        = require('util').format;
-var Q             = require('q');
 var log4js        = require('log4js');
 
 log4js.configure( __dirname + '/../config/magnet_grabber.json', { reloadSecs: 300 });

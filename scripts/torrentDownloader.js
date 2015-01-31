@@ -2,6 +2,11 @@
  * Created by g706138 on 27.01.2015.
  */
 
+var torrentStream = require('torrent-stream');
+var log4js        = require('log4js');
+
+log4js.configure( __dirname + '/../config/torrent_downloader.json', { reloadSecs: 300 });
+
 //    var engine = torrentStream(magnets[0]);
 //
 //    engine.on('ready', function() {
