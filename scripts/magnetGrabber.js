@@ -8,11 +8,11 @@ var log4js        = require('log4js');
 
 log4js.configure( __dirname + '/../config/magnet_grabber.json', { reloadSecs: 300 });
 
+console.log('starting...');
+
 var numberRegEx = /[0-9]+$/;
 var tvRegEx = /^(.*)-[0-9]+$/;
 var episodeNameRegEx = /^\([0-9]+\/[0-9]+\) (.*) - [0-9]+$/;
-
-console.log('starting...');
 
 MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
 
@@ -62,7 +62,7 @@ MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
                                         watching  : false,
                                         timestamp : new Date()
                                     }, function(err) {
-                                        closeEpisode();
+                                        closeAction();
                                         if(err) throw err;
                                     });
 
@@ -83,11 +83,11 @@ MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
                                     queue         : queueEpisode,
                                     timestamp     : new Date()
                                 }, function(err) {
-                                    closeEpisode();
+                                    closeAction();
                                     if(err) throw err;
                                 } );
                             } else {
-                                closeEpisode();
+                                closeAction();
                             }
 
                         });
@@ -97,7 +97,7 @@ MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
                 });
             } );
 
-            function closeEpisode() {
+            function closeAction() {
                 openActions--;
                 if( openActions < 1 ) {
                     db.close();
