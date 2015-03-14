@@ -32,70 +32,84 @@ MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
                 var epId   = value._attributes[1]._nodeValue;
                 var tvId   = epId.match(tvRegEx)[1];
                 var tvName = value.firstChild.nodeValue.match(episodeNameRegEx)[1];
+                var magnet = window.$("div#" + epId + " div.linkful:first-child a[href^=\"magnet\"]");
 
-                window.$("div#" + epId + " div.linkful:first-child a[href^=\"magnet\"]").each( function(index, value) {
+                if( magnet.length == 1 ) {
 
-                    var magnetUrl = value._attributes[0]._nodeValue;
+                    magnet.each(function (index, value) {
+                        if (epId == 'gundam-reconguista-in-g-24') {
+                            console.log('jup1');
+                        }
 
-                    episodesCollection.count({ id : epId }, function( err, count ) {
+                        var magnetUrl = value._attributes[0]._nodeValue;
 
-                        if(err) throw err;
+                        episodesCollection.count({ id: epId }, function (err, count) {
 
-                        if( count == 0 ) {
+                            if (err) throw err;
 
-                            tvseriesCollection.find({ id : tvId }).toArray( function( err, data ) {
+                            if (count == 0) {
 
-                                if(err) throw err;
-                                var queueEpisode = false;
+                                console.log('insert');
 
-                                if( data.length == 0 ) {
+                                tvseriesCollection.find({ id: tvId }).toArray(function (err, data) {
 
-                                    console.log('...adding tvseries ' + tvId);
+                                    if (err) throw err;
+                                    var queueEpisode = false;
 
-                                    openActions++;
-                                    queueEpisode = true;
+                                    if (data.length == 0) {
 
-                                    tvseriesCollection.insert({
-                                        id        : tvId,
-                                        alias     : tvId,
-                                        desc      : tvName,
-                                        watching  : false,
-                                        timestamp : new Date()
-                                    }, function(err) {
+                                        console.log('...adding tvseries ' + tvId);
+
+                                        openActions++;
+                                        queueEpisode = true;
+
+                                        tvseriesCollection.insert({
+                                            id: tvId,
+                                            alias: tvId,
+                                            desc: tvName,
+                                            watching: false,
+                                            timestamp: new Date()
+                                        }, function (err) {
+                                            closeAction();
+                                            if (err) throw err;
+                                        });
+
+                                    } else {
+                                        queueEpisode = data[0].watching;
+                                    }
+
+                                    console.log('...adding episode ' + epId);
+
+                                    episodeNumber = parseInt(epId.match(numberRegEx)[0]);
+
+                                    episodesCollection.insert({
+                                        id: epId,
+                                        tvid: tvId,
+                                        series: tvName,
+                                        episodeNumber: episodeNumber,
+                                        magnet: magnetUrl,
+                                        queue: queueEpisode,
+                                        timestamp: new Date()
+                                    }, function (err) {
                                         closeAction();
-                                        if(err) throw err;
+                                        if (err) throw err;
                                     });
 
-                                } else {
-                                    queueEpisode = data[0].watching;
-                                }
+                                });
 
-                                console.log('...adding episode ' + epId);
+                            } else {
+                                closeAction();
+                            }
 
-                                episodeNumber = parseInt(epId.match(numberRegEx)[0]);
-
-                                episodesCollection.insert( {
-                                    id            : epId,
-                                    tvid          : tvId,
-                                    series        : tvName,
-                                    episodeNumber : episodeNumber,
-                                    magnet        : magnetUrl,
-                                    queue         : queueEpisode,
-                                    timestamp     : new Date()
-                                }, function(err) {
-                                    closeAction();
-                                    if(err) throw err;
-                                } );
-
-                            });
-
-                        } else {
-                            closeAction();
-                        }
+                        });
 
                     });
 
-                });
+                } else {
+                    console.error('Could not match: ' + epId);
+                    closeAction();
+                }
+
             } );
 
             function closeAction() {

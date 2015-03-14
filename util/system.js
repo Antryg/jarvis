@@ -1,8 +1,7 @@
-var util = require('util');
 var exec = require('child_process').exec;
 
 function puts(error, stdout, stderr) {
-    util.puts(stdout);
+    console.log(stdout);
 }
 
 function execute(cmd) {
