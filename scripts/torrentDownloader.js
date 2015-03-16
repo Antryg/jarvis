@@ -13,8 +13,6 @@ var Q             = require('q');
 var sanitize      = require("sanitize-filename");
 
 log4js.configure( __dirname + '/../config/torrent_downloader.json', { reloadSecs: 300 });
-system.execute("rm -rf /tmp/torrent-stream/*");
-//system.execute("find /tmp/torrent-stream/* -mtime +3 -exec rm {} \;");
 
 
 console.log('starting...');
@@ -30,8 +28,10 @@ function start() {
     self.openActions = 0;
     self.hostname = 'Odin';
     self.systemfolder = '/tmp/torrent-stream/';
-    self.hostfolder   = '/mnt/odin/anime/';
-//    self.hostfolder   = '/tmp/odin/';
+//    self.systemfolder = '/mnt/odin/torrent-stream/';
+    self.hostfolder   = '/mnt/odin/video/anime/';
+
+    system.execute("rm -rf " + self.systemfolder + "*");
 
     MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function (err, db) {
 
@@ -71,7 +71,7 @@ function start() {
                                         .then(function()     { return self.downloadTorrent(episode, tvseries); })
                                         .then(function(file) { return self.checkTvFolder(file, tvseries); })
                                         .then(function(file) { return self.moveTorrent(file, episode, tvseries); })
-//                                        .then(function(file) { return self.finalizeTorrent(file, tvseries, episode); })
+                                        .then(function()     { return self.finalizeTorrent(episode); })
                                         .catch(function(error) { console.error(error); })
                                         .finally(self.closeAction);
                                 }
@@ -150,6 +150,7 @@ function start() {
             var source = fs.createReadStream(sourcePath);
             var destination = fs.createWriteStream(destPath);
 
+            console.log('...start piping');
             source.pipe(destination);
 
             source.on(      'end',    function() { fs.unlinkSync(sourcePath); });
@@ -162,10 +163,19 @@ function start() {
 
         };
 
-        self.finalizeTorrent = function(file, tvseries, episode) {
+        self.finalizeTorrent = function(episode) {
 
             var deferred = Q.defer();
-            deferred.resolve();
+            episode.queue = false;
+
+            self.episodesCollection.save(episode, function(err) {
+                if (err) {
+                    deferred.reject( new Error(err) );
+                } else {
+                    deferred.resolve();
+                }
+            });
+
             return deferred.promise;
 
         };
