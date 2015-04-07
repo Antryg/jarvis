@@ -26,7 +26,7 @@ function start() {
 
     var self = this;
 
-    self.diskSpaceLimit = 1000 * 1024;
+    self.diskSpaceLimit = 5000 * 1024;
     self.workerLimit = 2;
     self.hostname = 'Odin';
     self.streamingFolder = '/tmp/torrent-stream/';
@@ -306,9 +306,9 @@ function episodeDownloader(downloader, episode) {
             });
         });
 
-        engine.on('download', function (index) {
-            console.info((' Piece: ' + index + ' downloaded'));
-        });
+//        engine.on('download', function (index) {
+//            console.info((' Piece: ' + index + ' downloaded'));
+//        });
 
         return deferred.promise;
 
