@@ -33,8 +33,6 @@ function start() {
     self.localStoreFolder = '/home/pi/torrentStore/';
     self.remoteStoreFolder = '/mnt/odin/video/anime/';
 
-    self.openActions = 0;
-
     ps.lookup(
         {
             command   : 'node',
@@ -54,33 +52,30 @@ function start() {
                 });
             } else {
 
-                system.execute("rm -rf " + self.streamingFolder + "*");
+                system.execute("rm -rf " + self.streamingFolder + "*", function(){});
 
                 MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function (err, db) {
 
                     if (err) throw err;
 
+                    self.db = db;
+
                     diskspace.check('/', function (err, total, free, status) {
 
                         if (free < diskSpaceLimit) {
                             console.error('...not enough space left on device');
-                            self.uploadLocalStore()
-                                .then(self.closeAction);
+                            self.uploadLocalStore().then(self.destroy);
                         } else {
 
-                            self.episodesCollection = db.collection('episodes');
-                            self.tvseriesCollection = db.collection('tvseries');
+                            self.episodesCollection = self.db.collection('episodes');
+                            self.tvseriesCollection = self.db.collection('tvseries');
 
                             self.episodesCollection.find({ queue: true }).limit(workerLimit).toArray(function (err, data) {
 
-                                self.openActions += data.length;
-
-                                if (openActions < 1) {
+                                if (data.length < 1) {
                                     console.log('...nothing to do');
-                                    self.closeAction();
+                                    self.destroy();
                                 } else {
-
-                                    self.openActions++;
 
                                     self.uploadLocalStore()
                                         .then(function () {
@@ -101,9 +96,7 @@ function start() {
                                         .catch(function (error) {
                                             console.error(error);
                                         })
-                                        .finally(function () {
-                                            self.closeAction();
-                                        });
+                                        .finally(self.destroy);
 
                                 }
 
@@ -124,15 +117,12 @@ function start() {
 
 
 
-    self.closeAction = function () {
-        openActions--;
-        if (openActions < 1) {
-            db.close();
-            console.log('...shutting down');
-            log4js.shutdown(function () {
-                process.exit(1);
-            });
-        }
+    self.destroy = function () {
+        console.log('...shutting down');
+        self.db.close();
+        log4js.shutdown(function () {
+            process.exit(1);
+        });
     };
 
     self.moveFile = function (srcPath, dstPath) {
@@ -197,7 +187,7 @@ function start() {
                     });
 
                 } else {
-                    system.execute("rm -rf " + localStoreFolder + "*");
+                    system.execute("rm -rf " + localStoreFolder + "*", function(){});
                     deferred.resolve();
                 }
 
@@ -260,7 +250,6 @@ function episodeDownloader(downloader, episode) {
         } else {
             if (data.length < 1) {
                 console.error('...no tvseries to episode found: ' + self.episode.tvid);
-                self.downloader.closeAction();
                 deferred.resolve();
             } else {
 
@@ -274,7 +263,6 @@ function episodeDownloader(downloader, episode) {
                         console.error(error);
                     })
                     .finally(function () {
-                        self.downloader.closeAction();
                         deferred.resolve();
                     });
             }
