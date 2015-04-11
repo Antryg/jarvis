@@ -4,8 +4,11 @@ function puts(error, stdout, stderr) {
     console.log(stdout);
 }
 
-function execute(cmd) {
-    exec(cmd, puts);
+function execute(cmd, callback) {
+    if( !callback ) {
+        callback = puts;
+    }
+    exec(cmd, callback);
 }
 
 exports.execute = execute;
