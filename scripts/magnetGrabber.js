@@ -49,8 +49,6 @@ MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
 
                             if (count == 0) {
 
-                                console.log('insert');
-
                                 tvseriesCollection.find({ id: tvId }).toArray(function (err, data) {
 
                                     if (err) throw err;
