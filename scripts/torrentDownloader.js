@@ -320,6 +320,7 @@ function episodeDownloader(downloader, episode) {
 
         var deferred = Q.defer();
         self.episode.queue = false;
+        self.episode.downloaddate = new Date();
 
         self.downloader.episodesCollection.save(self.episode, function(err) {
             if (err) {

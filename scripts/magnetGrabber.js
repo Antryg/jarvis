@@ -87,7 +87,8 @@ MongoClient.connect('mongodb://127.0.0.1:27017/jarvis', function(err, db) {
                                         episodeNumber: episodeNumber,
                                         magnet: magnetUrl,
                                         queue: queueEpisode,
-                                        timestamp: new Date()
+                                        timestamp: new Date(),
+                                        downloaddate: null
                                     }, function (err) {
                                         closeAction();
                                         if (err) throw err;
