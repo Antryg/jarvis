@@ -27,7 +27,7 @@ function start() {
     var self = this;
 
     self.diskSpaceLimit = 5000 * 1024;
-    self.workerLimit = 2;
+    self.workerLimit = 3;
     self.hostname = 'Odin';
     self.streamingFolder = '/tmp/torrent-stream/';
     self.localStoreFolder = '/home/pi/torrentStore/';
@@ -74,7 +74,7 @@ function start() {
 
                                 if (data.length < 1) {
                                     console.log('...nothing to do');
-                                    self.destroy();
+                                    self.uploadLocalStore().then(self.destroy);
                                 } else {
 
                                     self.uploadLocalStore()
@@ -161,9 +161,9 @@ function start() {
                 var fileList = glob.sync('**/*.*', { cwd: localStoreFolder });
                 var openFiles = fileList.length;
 
-                console.log('...start uploading local Storage (' + openFiles + ' files)');
-
                 if (openFiles > 0) {
+
+                    console.log('...start uploading local Storage (' + openFiles + ' files)');
 
                     fileList.forEach(function (file) {
 
