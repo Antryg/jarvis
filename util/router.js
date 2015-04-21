@@ -1,4 +1,5 @@
-var express    = require('express');
+var express     = require('express');
+var bodyParser  = require("body-parser");
 //var favicon    = require('serve-favicon');
 //var serveIndex = require('serve-index');
 
@@ -14,6 +15,7 @@ var app        = express();
 //app.use(express.methodOverride());
 //app.use(express.cookieParser('CrusoeNode'));
 app.use(express.static(__dirname + '/../public'));
+app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(express.errorHandler());
 
 
@@ -29,7 +31,8 @@ function start(route) {
     //})
 
     app.route('/powerManagement').all( powerManagement.switch );
-    app.route('/magnetManagement/get').all( magnetManagement.get );
+    app.route('/magnetManagement/episodes').get(  magnetManagement.getEpisodes  );
+    app.route('/magnetManagement/episodes/queue').post( magnetManagement.queueEpisode );
 
     app.listen(8080);
     console.log("Server has started.");
