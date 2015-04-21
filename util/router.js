@@ -33,6 +33,8 @@ function start(route) {
     app.route('/powerManagement').all( powerManagement.switch );
     app.route('/magnetManagement/episodes').get(  magnetManagement.getEpisodes  );
     app.route('/magnetManagement/episodes/queue').post( magnetManagement.queueEpisode );
+    app.route('/magnetManagement/tv').get(  magnetManagement.getTvseries  );
+    app.route('/magnetManagement/tv/watch').post( magnetManagement.watchTvseries );
 
     app.listen(8080);
     console.log("Server has started.");
